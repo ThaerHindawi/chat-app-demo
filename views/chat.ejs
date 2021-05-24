@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .container {
+            border: 2px solid #dedede;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .darker {
+            border-color: #ccc;
+            background-color: #ddd;
+        }
+
+        .container::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .container img {
+            float: left;
+            max-width: 60px;
+            width: 100%;
+            margin-right: 20px;
+            border-radius: 50%;
+        }
+
+        .container img.right {
+            float: right;
+            margin-left: 20px;
+            margin-right: 0;
+        }
+
+        .time-right {
+            float: right;
+            color: #aaa;
+        }
+
+        .time-left {
+            float: left;
+            color: #999;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            /* Green */
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+
+        .button1 {
+            background-color: white;
+            color: black;
+            border: 2px solid #4CAF50;
+        }
+
+        .button1:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Chat Messages</h2>
+
+    <div id="messages" class="messages"></div>
+
+    <form class="container" id="message-form" action="#" method="post">
+        <textarea id="msg" name="chat_msg" cols="10" style="width: 100%;"></textarea>
+        <input type="hidden" id="senderId" name="senderId" value="<%= senderId %>">
+        <input type="hidden" id="receiverId" name="receiverId" value="<%= receiverId %>">        
+    </form>
+    <div>
+        <button class="button button1" id="send-message">Send Message</button>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script defer src="/socket.io/socket.io.js"></script>
+    <script src="/chat.js"></script>
+</body>
+
+</html>

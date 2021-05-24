@@ -49,7 +49,7 @@ io.on("connection", socket => {
                 // the combination between them will be 6032b74134afe118a4156081&6032b70234afe118a415607f
                 // and if receiverId = 6032b70234afe118a415607f and senderId = 6032b74134afe118a4156081
                 // the combination between them will be 6032b74134afe118a4156081&6032b70234afe118a415607f
-                // so it will be end in the same result
+                // so it will be in the end same result
                 if (receiverId > senderId) {
                     privateId = `${receiverId}&${senderId}`;
                 } else {

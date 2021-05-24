@@ -1,4 +1,4 @@
-window.onload = () => {
+$(function () {
     const socket = io();
 
     let receiverId = $('#receiverId').val();
@@ -22,12 +22,6 @@ window.onload = () => {
     //     if (privateChatId) {
     //         privateId = privateChatId;
     //     }
-    // });
-
-
-    // $('#submit').on('click', (event) => {
-    //     console.log('in');
-    //     $('#message-form').submit();
     // });
 
     $('#send-message').on('click', (event) => {
@@ -64,4 +58,4 @@ window.onload = () => {
 
         $('#messages').append(message);
     });
-}
+});

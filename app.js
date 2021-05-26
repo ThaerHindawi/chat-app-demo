@@ -9,7 +9,6 @@ const io = require('socket.io')(server, {
     }
 });
 const PORT = 3000;
-const ejs = require('ejs');
 
 const mongoose = require('mongoose');
 const uri = 'mongodb+srv://admin:123@cluster0.ookg1.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
@@ -33,34 +32,6 @@ app.use(express.urlencoded({
 }));
 
 app.use(express.static(__dirname + '/public'));
-
-app.set('view engine', 'ejs');
-
-app.get('/', (req, res) => {
-    res.redirect('join-room.html');
-});
-
-app.post('/chat', async (req, res) => {
-    console.log(req.body);
-    const senderId = req.body.senderId;
-    const receiverId = req.body.receiverId;
-    let privateId;
-    if (receiverId > senderId) {
-        privateId = `${receiverId}&${senderId}`;
-    } else {
-        privateId = `${senderId}&${receiverId}`;
-    }
-    const messages = await messageModel.find({
-        privateId: privateId
-    });
-    res.render('chat', {
-        senderId: senderId,        
-        senderName: req.body.senderName,
-        receiverId: receiverId,
-        receiverName: req.body.receiverName,
-        messages: messages
-    });
-});
 
 app.get('/messages/:senderId/:receiverId', async (req, res) => {
     const senderId = req.params.senderId;
@@ -164,6 +135,6 @@ io.on("connection", socket => {
     });
 });
 
-server.listen(PORT, '192.168.1.55',() => {
+server.listen(PORT, () => {
     console.log('server listen on port: ' + PORT);
 });

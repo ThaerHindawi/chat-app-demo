@@ -1,8 +1,11 @@
 $(function () {
     const socket = io();
-
-    let receiverId = $('#receiverId').val();
+    
     let senderId = $('#senderId').val();
+    let senderName = $('#senderName').val();
+    let receiverId = $('#receiverId').val();
+    let receiverName = $('#receiverName').val();
+    
     // let privateId;
     socket.on('connect', () => {
         console.log('user connected from browser');
@@ -37,10 +40,13 @@ $(function () {
         socket.emit('privateMessage', {
             body: msg,
             senderId: senderId,
-            receiverId: receiverId
+            receiverId: receiverId,
+            senderName: senderName,
+            receiverName: receiverName
         }, () => {
             $('#msg').val('');
         });
+        $('#msg').val('');
     });
 
     socket.on('newPrivateMessage', (data) => {

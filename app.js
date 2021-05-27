@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const server = require('http').Server(app);
+const cors = require('cors');
 const io = require('socket.io')(server, {
     cors: {        
         methods: "*",
@@ -8,7 +9,7 @@ const io = require('socket.io')(server, {
         credentials: true
     }
 });
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const ejs = require('ejs');
 
 const mongoose = require('mongoose');
@@ -35,6 +36,9 @@ app.use(express.urlencoded({
 app.use(express.static(__dirname + '/public'));
 
 app.set('view engine', 'ejs');
+
+app.use(cors());
+app.options('*');
 
 app.get('/', (req, res) => {
     res.redirect('join-room.html');

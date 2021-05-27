@@ -3,7 +3,7 @@ const app = express();
 const server = require('http').Server(app);
 const cors = require('cors');
 const io = require('socket.io')(server, {
-    cors: {        
+    cors: {
         methods: "*",
         optionsSuccessStatus: 200,
         credentials: true
@@ -58,7 +58,7 @@ app.post('/chat', async (req, res) => {
         privateId: privateId
     });
     res.render('chat', {
-        senderId: senderId,        
+        senderId: senderId,
         senderName: req.body.senderName,
         receiverId: receiverId,
         receiverName: req.body.receiverName,
@@ -137,27 +137,35 @@ io.on("connection", socket => {
 
         if (message.body) {
 
-            // save message in database here if you want
-            const messageInfo = messageModel.create({                
-                body: message.body,
-                createdAt: formatted_date,
-                senderName: message.senderName,
-                senderId: message.senderId,
-                receiverId: message.receiverId,
-                receiverName: message.receiverName,
-                privateId:privateId
-            }).catch(console.error);
+            try {
+                // save message in database here if you want
+                const messageInfo = await messageModel.create({
+                    body: message.body,
+                    createdAt: formatted_date,
+                    senderName: message.senderName,
+                    senderId: message.senderId,
+                    receiverId: message.receiverId,
+                    receiverName: message.receiverName,
+                    privateId: privateId
+                });
 
-            // send message to the other user using privateId
-            // other user will be listen on event newPrivateMessage 
-            io.to(privateId).emit('newPrivateMessage', {
-                body: message.body,
-                createdAt: formatted_date,
-                // senderName: message.senderName,
-                senderId: message.senderId,
-                receiverId: message.receiverId,
-                // receiverName: message.receiverName,
-            });
+                // send message to the other user using privateId
+                // other user will be listen on event newPrivateMessage 
+                io.to(privateId).emit('newPrivateMessage', {
+                    body: messageInfo.body,
+                    createdAt: messageInfo.createdAt,
+                    // senderName: message.senderName,
+                    senderId: messageInfo.senderId,
+                    receiverId: messageInfo.receiverId,
+                    // receiverName: message.receiverName,
+                });
+            } catch (err) {
+                console.log(err);
+                // on error
+                socket.send({
+                    error: err
+                });
+            }
 
         } else {
             // on error

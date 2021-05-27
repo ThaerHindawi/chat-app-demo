@@ -164,6 +164,6 @@ io.on("connection", socket => {
     });
 });
 
-server.listen(PORT, '192.168.1.55',() => {
+server.listen(PORT, () => {
     console.log('server listen on port: ' + PORT);
 });

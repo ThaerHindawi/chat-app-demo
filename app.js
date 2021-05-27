@@ -1,32 +1,9 @@
 const express = require('express');
 const app = express();
 const server = require('http').Server(app);
-const cors = require('cors');
-const io = require('socket.io')(server, {
-    cors: {
-        methods: "*",
-        optionsSuccessStatus: 200,
-        credentials: true
-    }
-});
+const io = require('socket.io')(server);
 const PORT = process.env.PORT || 3000;
 const ejs = require('ejs');
-
-const mongoose = require('mongoose');
-const uri = 'mongodb+srv://admin:123@cluster0.ookg1.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
-
-const messageModel = require('./models/message');
-
-mongoose.connect(uri, {
-        useNewUrlParser: true,
-        useCreateIndex: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false
-    })
-    .then((db) => {
-        console.log("Mongoose default connection is open to ", uri);
-    })
-    .catch(err => console.log("Error connecting to db: " + err));
 
 app.use(express.json());
 app.use(express.urlencoded({
@@ -37,99 +14,21 @@ app.use(express.static(__dirname + '/public'));
 
 app.set('view engine', 'ejs');
 
-app.use(cors());
-app.options('*');
-
 app.get('/', (req, res) => {
-    res.redirect('join-room.html');
-});
-
-app.post('/chat', async (req, res) => {
-    console.log(req.body);
-    const senderId = req.body.senderId;
-    const receiverId = req.body.receiverId;
-    let privateId;
-    if (receiverId > senderId) {
-        privateId = `${receiverId}&${senderId}`;
-    } else {
-        privateId = `${senderId}&${receiverId}`;
-    }
-    const messages = await messageModel.find({
-        privateId: privateId
-    });
-    res.render('chat', {
-        senderId: senderId,
-        senderName: req.body.senderName,
-        receiverId: receiverId,
-        receiverName: req.body.receiverName,
-        messages: messages
-    });
-});
-
-app.get('/messages/:senderId/:receiverId', async (req, res) => {
-    const senderId = req.params.senderId;
-    const receiverId = req.params.receiverId;
-    let privateId;
-    if (receiverId > senderId) {
-        privateId = `${receiverId}&${senderId}`;
-    } else {
-        privateId = `${senderId}&${receiverId}`;
-    }
-    const messages = await messageModel.find({
-        privateId: privateId
-    });
-    res.send(messages);
+    res.redirect('/chat.html');
 });
 
 // Listen on connections
 io.on("connection", socket => {
-
+    const name = 'user' + Math.floor(Math.random() * 1000000);
     socket.on("disconnect", () => {
         console.log("user disconnected");
     });
 
     console.log(`${socket.id} is connected`);
 
-    // join private chat between two users
-    socket.on('joinPrivate', (data) => {
-        if (data) {
-            let privateId;
-            let senderId = data.senderId;
-            let receiverId = data.receiverId;
-            if (receiverId && senderId) {
-                // arrange users ID between sender and receiver
-                // to make new ID that will be used to connect the two users together
-                // example if receiverId = 6032b74134afe118a4156081 and senderId = 6032b70234afe118a415607f
-                // the combination between them will be 6032b74134afe118a4156081&6032b70234afe118a415607f
-                // and if receiverId = 6032b70234afe118a415607f and senderId = 6032b74134afe118a4156081
-                // the combination between them will be 6032b74134afe118a4156081&6032b70234afe118a415607f
-                // so it will be in the end same result
-                if (receiverId > senderId) {
-                    privateId = `${receiverId}&${senderId}`;
-                } else {
-                    privateId = `${senderId}&${receiverId}`;
-                }
-                console.log(privateId);
-                if (privateId) {
-                    // join private messaging by private Id 
-                    // private Id is combination between senderId and receiverId
-                    socket.join(privateId);
-                    console.log(`user ${senderId} join private chat: ${privateId}`);
-                    // emit privateId to frontend to use it there if you want
-                    // socket.emit('privateId', privateId);
-                }
-            }
-        }
-    });
-
-    socket.on('privateMessage', async (message) => {
+    socket.on('message', async (message) => {
         console.log(message);
-        let privateId;
-        if (message.receiverId > message.senderId) {
-            privateId = `${message.receiverId}&${message.senderId}`;
-        } else {
-            privateId = `${message.senderId}&${message.receiverId}`;
-        }
 
         let current_datetime = new Date();
         // formatte date
@@ -139,25 +38,11 @@ io.on("connection", socket => {
 
             try {
                 // save message in database here if you want
-                const messageInfo = await messageModel.create({
-                    body: message.body,
-                    createdAt: formatted_date,
-                    senderName: message.senderName,
-                    senderId: message.senderId,
-                    receiverId: message.receiverId,
-                    receiverName: message.receiverName,
-                    privateId: privateId
-                });
 
-                // send message to the other user using privateId
-                // other user will be listen on event newPrivateMessage 
-                io.to(privateId).emit('newPrivateMessage', {
-                    body: messageInfo.body,
-                    createdAt: messageInfo.createdAt,
-                    // senderName: message.senderName,
-                    senderId: messageInfo.senderId,
-                    receiverId: messageInfo.receiverId,
-                    // receiverName: message.receiverName,
+                io.emit('newMessage', {
+                    name: name,
+                    body: message.body,
+                    createdAt: formatted_date
                 });
             } catch (err) {
                 console.log(err);
